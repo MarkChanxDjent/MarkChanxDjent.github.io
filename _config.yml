@@ -1,15 +1,15 @@
 # Site settings
-name: Less Or More
+name: Do you ever Djent?
 email: scorpionsand@163.com
 author: Peijie Chen
 url: 
 resume_site: 
 github: https://github.com/MarkChanxDjent
 baseurl: "/MarkChanxDjent.github.io"
-description: Actually, less is more!
+description: 捧哏艺术家
 meta_description: 
-motto: It's our wits that make us men.
-banner: 学而不思则罔，思而不学则殆。
+motto: Do you ever Djent bro?
+banner: So we roll the dice.
 
 #permalink: /:categories/:year/:month/:day/:title/
 permalink: /:year/:month/:day/:title/
@@ -17,7 +17,7 @@ paginate: 10
 
 exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
 
-github_username: luoyan35714
+github_username: MarkChanxDjent
 
 # Build settings
 markdown: kramdown

@@ -1,14 +1,14 @@
 # Site settings
-name: Do you ever Djent?
+name: Mark's Blog
 email: scorpionsand@163.com
 author: Peijie Chen
 url: 
 resume_site: https://github.com/MarkChanxDjent/CV/blob/master/CV_Peijie_Chen.pdf
 github: https://github.com/MarkChanxDjent
 baseurl: "/MarkChanxDjent.github.io"
-description: 捧哏艺术家
-meta_description: 
-motto: Do you ever Djent bro?
+description: 语音处理，自然语言处理，捧哏艺术家
+meta_description: 主要用来记录语音和NLP方面的学习
+motto: Does AI ever Djent?
 banner: So we roll the dice.
 
 #permalink: /:categories/:year/:month/:day/:title/

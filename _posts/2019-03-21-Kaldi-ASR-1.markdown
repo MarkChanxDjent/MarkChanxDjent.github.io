@@ -15,7 +15,7 @@ tag: Kaldi
 
 
 ## 这个是啥
-这个博客主要用来记录在爱丁堡大学Speech and Language Processing上过的一些课程。
+这个博客主要用来记录在爱丁堡大学读Speech and Language Processing的硕士时上过的一些课程。我自己本人是国内普通211汉语言学本科的，相关的背景也比较薄弱，还望各位多担待。
 
 TIMIT是很多研究Kaldi的旁友经常接触到的语料库，网上也有不少介绍在Kaldi上跑TIMIT的文章，我个人觉得比较详细的是以下这篇：
 [Kaldi完美运行TIMIT完整结果（含DNN）][1]

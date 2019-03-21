@@ -1,0 +1,75 @@
+---
+layout: post
+
+title:  用Kaldi在timit上跑Speech Adaptation 和 Gender Dependent遇到的坑
+
+date:   2019-03-21 
+
+categories: 语音识别
+
+tag: Kaldi
+---
+
+* content
+{:toc}
+
+这个博客主要用来记录在爱丁堡大学Speech and Language Processing上过的一些课程。
+
+TIMIT是很多研究Kaldi的旁友经常接触到的语料库，网上也有不少介绍在Kaldi上跑TIMIT的文章，我个人觉得比较详细的是以下这篇：
+[Kaldi完美运行TIMIT完整结果（含DNN）][1]
+
+
+上面这篇文章把/egs/timit/s5/run.sh里的内容基本上介绍了一遍，Dan Povey本人在Google的group上也经常会让提问的人回去研究一下这些类似于‘范例’一样的脚本，这是学习Kaldi的一个好途径。【也是我完成这个作业的一个小捷径。
+
+这里主要介绍一下我在完成这份作业时遇到的几个小坑，基本上都是我在作业中遇到的，而且国内论坛没怎么见人提到过的。
+
+## 语言模型
+Kaldi主要是用来做文字级别的识别，即word recognition，同时也能拿来做音素级别的识别，也就是phone recognition。这个主要是在数据准备的阶段完成，Kaldi会根据data中提供的字典生成语言模型。我们可以通过查看data/lang/word 这个文件的内容来判断，如果里面的是音素，那就是做音素级别的识别，反之则是文字级别的。
+这个在训练之前要注意一下，同时也要保证data/train/text和data/test/text这两个文件里的大小写要和上面提到的data/lang/word一致。
+这个大概就是语言模型容易遇到的坑，建议留神，不要等到模型跑完了才发现做出来的不是自己想要的东西。
+
+## 自己的Data
+很多旁友想要用自己的data做测试，Kaldi的官网也有相关介绍。我们需要自己准备三个文件，一个是text，包含每个utterance的id和具体的transcripts。一个是utt2spk，也就是对应的utterance id和对应说话人的id。最后一个是wav.scp，包含的是每个utterance的id和对应的文件地址。
+这三样是需要我们自己准备的，然后我们可以通过utils文件里的utt2spk_to_speak2utt来创建spk2utt。 之后就是提取对应的MFCCs和CMVN特征了。
+需要注意的是，我们这里没有glm和stm文件，如果想要得到WER也就是文字级别的识别就会出问题。这和我们上面提到的语言模型有点关系，TIMIT本来是用来建一个音素识别的系统，所以Kaldi在这个实验的文件夹里放的score.sh应该是适合测PER的。那简单的方法是在deocde的时候加上一句 --skip-scoring true，之后再从别的地方（例如 wsj/s5steps）找个score.sh来评分就可以。
+当然，还可以直接从我校某校友的github上找到这个script，百度或者谷歌local/score_words.sh即可。这哥们居然把整个ASR的工作文件夹都传了上去，非常服气，坑死后面的人了。
+
+## Monophone HMM-GMM
+上面的事情干完之后就可以愉悦地训练单音素模型了。
+我们这个作业需要探究高斯数量对模型好坏的影响。--totgauss 可以用来调整模型计划使用的总高斯量，我们没办法单独给某个state赋值高斯的数量，这个是由数据分布决定的，某些state出现得多模型自然会给他们更多的高斯。
+需要注意的是，这里只是我们期望的高斯量，至于具体有多少，我们可以用steps/info/gmm_dir_info.pl 来查看，我们发现大概五万多个左右就是极限了。
+目标高斯数一般来说都不会是越多越好的，就我们这个实验来说，目标高斯到九千附近之后，WER就开始往下跑了。
+我们在看实际高斯量的同时也会看到训练时的log likelihood，他是一直升高的。但是当我们打开./exp/mono/decode_test/log/decode.*.log
+这些文件时，我们就发现测试时的log likelihood在上升一段时间之后就会往下跑，也就是说模型overfit了。
+旁友们可能也会想着调调MFCCs或者CMVN之类的。
+MFCC存的时候就是是不带delta的，当我们用的时候，add-delta（大概是这个命令，我记不太清楚，可以回去翻train_mono.sh）就会带上delta + delta delta，也就是我们常说的那39维的MFCCs了。如果我们只想要一个delta，也就是26维的MFCCs，那就在跑train_mono.sh的加一句--delta-opts "--delta-order=1"即可。 不要delta要怎么写就不用说了吧？？
+CMVN，这东西对我这种本科读语言学的人来说简直折磨。Kaldi本身也有默认的设定，奈何学校就是要让我们自己动手试试呢？？（Fly bitch警告）
+--cmvn-opts "--norm-vars=true --norm-means=false" 加在train_mono.sh后面就能使用data的倒谱均值和倒谱方差归一化信息。需要注意的是，如果两个都想调整，记得把他们放在同一个value里（也就是同一对双引号里），否则只会改变其中的一个，当时没注意到train_mono.sh五十五这里这样写，还乐呵说‘这CMN也没什么了不起的嘛，开不开都一样。’
+
+## Triphone HMM-GMM
+有了monophone的经验，训练triphone就比较顺利了。
+我们在这里基本上没踩到啥坑，按着Dan 给的菜谱一步一步来就好。
+
+## Gender Dependent HMM-GMM
+我跟我中国的同学想了很久要怎么翻译gender depedent，后来还是妥协了就直接说“性别相关”的模型。建立性别相关模型可以看做在做domain adaptation，也就是让我们的模型适应某个领域。简单说就是做一个对女性或者男性更友好的模型，当然在这个模型之前应该还需要一个识别男女的model，这样就能构成一个完整的系统了，我们这里直接用的是TIMIT标好的信息（金手指美滋滋）。
+
+按照大佬Dan的建议，domain adaptation最好就是用MAP(Maximum a posteriori)，具体的操作可以见：
+[Kaldi在github上方的gender dependent模型][2]
+
+
+大佬虽然没写完，但也就只剩个构图和解码了，用正常的方式即可。
+MAP既可以用在做过特征基于delta的模型上，也可以用在特征做过LDA和MLLT的模型上，我们选择后者。
+但是我们的实验发现，我们做出来的MAP Model对女性友好，对男性却不友好。这和MAP这个方法本身的缺陷有关，当高斯量很多而自适应的数据很小时，模型就很难适应这么多的高斯。（我们作业是这样写的，可能过两天发现自己错了就会回来改了orz）
+  
+## DNN-HMM adapation
+训练完run.sh的tri3，我们就能得到一个用fMLLR做SAT训练的模型，这个没啥难度，等一下就行。
+问题是如何在DNN上做adapation，这个问题困扰了我们很久。因为如果将tri3用fMLLR对齐后拿去训练一个DNN的结果并不如原本的tri3（我们这里用的是nnet），这让我们一度很沮丧。原因估计是因为fMLLR本身是线性变换，而放进DNN之后做的是非线性变换，这中间可能就使得模型没了adapation的能力。
+后来我们发现，可以用ivector，但是具体的实现还没做，具体可以参考下面这篇论文：
+[Speaker Adaptive Training for Deep Neural Network Acoustic Models][3]
+
+
+  [1]: https://blog.csdn.net/longwo888/article/details/85783287
+  [2]: https://github.com/kaldi-asr/kaldi/blob/master/egs/wsj/s5/local/run_gender_dep.sh
+  [3]: https://www.cs.cmu.edu/~ymiao/satdnn.html
+或者是直接跑nnet3里的run_tdnn.sh和run_ivector_common.sh试试。
+后续如果我们有更新就会上传。

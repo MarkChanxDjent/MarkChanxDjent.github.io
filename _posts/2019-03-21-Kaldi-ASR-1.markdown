@@ -58,7 +58,10 @@ MFCC存的时候就是是不带delta的，当我们用的时候，add-delta（�
 
 CMVN，这东西对我这种本科读语言学的人来说简直折磨。Kaldi本身也有默认的设定，奈何学校就是要让我们自己动手试试呢？？（Fly bitch警告）
 
---cmvn-opts "--norm-vars=true --norm-means=false" 加在train_mono.sh后面就能使用data的倒谱均值和倒谱方差归一化信息。需要注意的是，如果两个都想调整，记得把他们放在同一个value里（也就是同一对双引号里），否则只会改变其中的一个，当时没注意到train_mono.sh五十五这里这样写，还乐呵说‘这CMN也没什么了不起的嘛，开不开都一样。’
+--cmvn-opts "--norm-vars=true --norm-means=false" 加在train_mono.sh后面就能使用data的倒谱均值和倒谱方差归一化信息。需要注意的是，如果两个都想调整，记得把他们放在同一个value里（也就是同一对双引号里），否则只会改变其中的一个，当时没注意到train_mono.sh第五十五行这里这样写，还乐呵说‘这CMN也没什么了不起的嘛，开不开都一样。’
+
+    $norm_vars && cmvn_opts="--norm-vars=true $cmvn_opts"
+    echo $cmvn_opts  > $dir/cmvn_opts # keep track of options to CMVN.
 
 ## Triphone HMM-GMM
 有了monophone的经验，训练triphone就比较顺利了。我们在这里基本上没踩到啥坑，按着Dan 给的菜谱一步一步来就好。

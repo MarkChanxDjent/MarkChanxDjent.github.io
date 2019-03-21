@@ -1,7 +1,7 @@
 ---
 layout: post
 #标题配置
-title:  用Kaldi在timit上跑Speech Adaptation 和 Gender Dependent遇到的坑
+title:  用Kaldi在TIMIT上跑Speech Adaptation 和 Gender Dependent遇到的坑
 #时间配置
 date:   2019-03-21 
 #大类配置

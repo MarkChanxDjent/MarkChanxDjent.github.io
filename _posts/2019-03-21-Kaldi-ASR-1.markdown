@@ -15,9 +15,6 @@ tag: Kaldi
 
 
 
-# 用Kaldi在timit上跑Speech Adaptation 和 Gender Dependent遇到的坑
-
-
 这个博客主要用来记录在爱丁堡大学Speech and Language Processing上过的一些课程。
 
 TIMIT是很多研究Kaldi的旁友经常接触到的语料库，网上也有不少介绍在Kaldi上跑TIMIT的文章，我个人觉得比较详细的是以下这篇：
